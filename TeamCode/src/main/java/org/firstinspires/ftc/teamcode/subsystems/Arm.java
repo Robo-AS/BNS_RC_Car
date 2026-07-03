@@ -13,7 +13,7 @@ import dev.frozenmilk.dairy.cachinghardware.CachingServo;
 public class Arm  extends SubsystemBase {
     private static Arm instance = null;
 
-    public CachingServo servoElbow, servoShoulder;
+    public CachingServo servoArm;
 
     public static Arm getInstance() {
         if (instance == null) {
@@ -22,19 +22,25 @@ public class Arm  extends SubsystemBase {
         return instance;
     }
 
-    public void initializeHardware(final HardwareMap hardwareMap){
-        servoElbow = new CachingServo(hardwareMap.get(Servo.class, "servoElbow"));
-        servoElbow.setDirection(Servo.Direction.FORWARD);
+    public static double servoArm_init = 0.54;
+    public static double servoArm_engaged = 0.85;
 
-        servoShoulder = new CachingServo(hardwareMap.get(Servo.class, "servoShoulder"));
-        servoShoulder.setDirection(Servo.Direction.FORWARD);
+    public void initializeHardware(final HardwareMap hardwareMap){
+        servoArm = new CachingServo(hardwareMap.get(Servo.class, "servoArm"));
+        servoArm.setDirection(Servo.Direction.FORWARD);
+
     }
 
     public void initialize(){
-
+        servoArm.setPosition(servoArm_init);
     }
 
     public void loop(){
 
+    }
+
+
+    public void engageArm(){
+        servoArm.setPosition(servoArm_engaged);
     }
 }

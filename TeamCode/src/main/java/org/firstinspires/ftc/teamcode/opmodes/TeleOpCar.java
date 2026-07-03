@@ -11,9 +11,18 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.command.ConditionalCommand;
+import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
+import org.firstinspires.ftc.teamcode.commands.DecreaseTrimCommand;
+import org.firstinspires.ftc.teamcode.commands.EngageArm;
+import org.firstinspires.ftc.teamcode.commands.IncreaseTrimCommand;
+import org.firstinspires.ftc.teamcode.commands.SetDirectionStateCommand;
+import org.firstinspires.ftc.teamcode.commands.SetDriveStateCommand;
 import org.firstinspires.ftc.teamcode.hardware.Car;
+import org.firstinspires.ftc.teamcode.subsystems.DriveTrain;
 
 @Config
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOpCar🚗", group = "OpModes")
@@ -32,17 +41,64 @@ public class TeleOpCar extends CommandOpMode {
         car.initializeHardware(hardwareMap);
         car.initialize();
 
+        gamepadEx.getGamepadButton(GamepadKeys.Button.DPAD_LEFT)
+                .whenPressed(new DecreaseTrimCommand());
+        gamepadEx.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT)
+                .whenPressed(new IncreaseTrimCommand());
+
+        gamepadEx.getGamepadButton(GamepadKeys.Button.A)//cross
+                .whenPressed(new EngageArm());
+        gamepadEx.getGamepadButton(GamepadKeys.Button.Y)//triangle
+                .whenPressed(
+                        () -> CommandScheduler.getInstance().schedule(
+                                new ConditionalCommand(
+                                        new SetDirectionStateCommand(DriveTrain.DirectionState.SINGLE),
+                                        new SetDirectionStateCommand(DriveTrain.DirectionState.DUAL),
+                                        () -> car.driveTrain.directionState == DriveTrain.DirectionState.DUAL
+                                )
+                        )
+                );
+
+        gamepadEx.getGamepadButton(GamepadKeys.Button.B)//sqaure
+                .whenPressed(new SetDriveStateCommand(DriveTrain.DriveState.TANK_LEFT));
+        gamepadEx.getGamepadButton(GamepadKeys.Button.B)//sqaure
+                .whenReleased(new SetDriveStateCommand(DriveTrain.DriveState.DEFAULT));
+
+
+        gamepadEx.getGamepadButton(GamepadKeys.Button.X)//circle
+                .whenPressed(new SetDriveStateCommand(DriveTrain.DriveState.TANK_RIGHT));
+        gamepadEx.getGamepadButton(GamepadKeys.Button.X)//circle
+                .whenReleased(new SetDriveStateCommand(DriveTrain.DriveState.DEFAULT));
+
+
+
+
+
+
+
     }
 
     @Override
     public void run() {
         CommandScheduler.getInstance().run();
         car.bulkRead();
+        car.loop(gamepad1.left_stick_y, gamepad1.right_stick_x);
 
-        car.loop(gamepad1.left_stick_y, -gamepad1.right_stick_x);
+
+//        if(gamepad1.triangle){
+//            if(car.driveTrain.directionState == DriveTrain.DirectionState.DUAL){
+//                car.driveTrain.directionState = DriveTrain.DirectionState.SINGLE;
+//            }
+//            else{
+//                car.driveTrain.directionState = DriveTrain.DirectionState.DUAL;
+//            }
+//        }
 
 
-        telemetry.addData("ceva", "ceva");
+
+
+        telemetry.addData("TRIM:", car.driveTrain.getTrimCounter());
+        telemetry.addData("Directie:", car.driveTrain.directionState);
         double loop = System.nanoTime();
         telemetry.addData("Hz", 1000000000 / (loop - loopTime));
         loopTime = loop;
