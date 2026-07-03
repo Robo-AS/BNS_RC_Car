@@ -39,7 +39,7 @@ public class TeleOpCar extends CommandOpMode {
         CommandScheduler.getInstance().run();
         car.bulkRead();
 
-        car.loop(gamepad1.left_stick_y);
+        car.loop(gamepad1.left_stick_y, -gamepad1.right_stick_x);
 
 
         telemetry.addData("ceva", "ceva");

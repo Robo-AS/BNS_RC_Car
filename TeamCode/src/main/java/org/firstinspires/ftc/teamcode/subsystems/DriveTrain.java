@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -27,7 +26,16 @@ public class DriveTrain extends SubsystemBase {
         return instance;
     }
 
-    public static double frontLeftServo_init = 0.5, backLeftServo_init = 0.5, frontRightServo_init = 0.5, backRightServo_init = 0.5;
+    public static double frontLeftServo_init = 0.505, backLeftServo_init = 0.48, frontRightServo_init = 0.49, backRightServo_init = 0.48;
+    public static double frontLeftPos = 0.505;
+    public static double backLeftPos = 0.48;
+    public static double frontRightPos = 0.49;
+    public static double backRightPos = 0.48;
+
+    public static double backLeft_MIN = 0.7, backLeft_MAX = 0.32;
+    public static double backRight_MIN = 0.6, backRight_MAX = 0.25;
+    public static double frontLeft_MIN = 0.3, frontLeft_MAX = 0.64;
+    public static double frontRight_MIN = 0.36, frontRight_MAX = 0.7;
 
 
     public void initializeHardware(final HardwareMap hardwareMap){
@@ -74,18 +82,46 @@ public class DriveTrain extends SubsystemBase {
         frontLeftServo.setPosition(frontLeftServo_init);
         backRightServo.setPosition(backRightServo_init);
         backLeftServo.setPosition(backLeftServo_init);
+
+        frontLeftPos = 0.505;
+        backLeftPos = 0.48;
+        frontRightPos = 0.49;
+        backRightPos = 0.48;
     }
 
-    public void loop(double power){
-        frontRightServo.setPosition(frontRightServo_init);
-        frontLeftServo.setPosition(frontLeftServo_init);
-        backRightServo.setPosition(backRightServo_init);
-        backLeftServo.setPosition(backLeftServo_init);
+    public void loop(double power, double direction){
+        if(direction == 0){
+            frontRightServo.setPosition(frontRightServo_init);
+            frontLeftServo.setPosition(frontLeftServo_init);
+            backRightServo.setPosition(backRightServo_init);
+            backLeftServo.setPosition(backLeftServo_init);
+        }
+        else if(direction > 0){
+            frontRightServo.setPosition(interpolateBig(direction, frontRightServo_init, frontRight_MAX));
+            frontLeftServo.setPosition(interpolateBig(direction, frontLeftServo_init, frontLeft_MAX));
+            backRightServo.setPosition(interpolateBig(direction, backRightServo_init, backRight_MAX));
+            backLeftServo.setPosition(interpolateBig(direction, backLeftServo_init, backLeft_MAX));
+        }
+        else{
+            frontRightServo.setPosition(interpolateSmall(direction, frontRight_MIN, frontRightServo_init));
+            frontLeftServo.setPosition(interpolateSmall(direction, frontLeft_MIN, frontLeftServo_init));
+            backRightServo.setPosition(interpolateSmall(direction, backRight_MIN, backRightServo_init));
+            backLeftServo.setPosition(interpolateSmall(direction, backLeft_MIN, backLeftServo_init));
+        }
 
         frontRightMotor.setPower(power);
         backRightMotor.setPower(power);
 
         frontLeftMotor.setPower(power);
         backLeftMotor.setPower(power);
+    }
+
+
+    public double interpolateBig(double input, double out_min, double out_max){
+        return (input - 0) * (out_max - out_min) / (1 - 0) + out_min;
+    }
+
+    public double interpolateSmall(double input, double out_min, double out_max){
+        return (input - (-1)) * (out_max - out_min) / (0 - (-1)) + out_min;
     }
 }

@@ -63,8 +63,8 @@ public class Car {
     }
 
 
-    public void loop(double power){
-        driveTrain.loop(power);
+    public void loop(double power, double direction){
+        driveTrain.loop(power, direction);
         arm.loop();
     }
 
