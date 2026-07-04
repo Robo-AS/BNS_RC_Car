@@ -46,7 +46,7 @@ public class DriveTrain extends SubsystemBase {
     public DriveState driveState = DriveState.DEFAULT;
     public DifferentialState differentialState = DifferentialState.IDLE;
 
-    public static double frontLeftServo_init = 0.47;
+    public static double frontLeftServo_init = 0.505;
     public static double backLeftServo_init = 0.48;
     public static double frontRightServo_init = 0.49;
     public static double backRightServo_init = 0.48;
@@ -59,7 +59,7 @@ public class DriveTrain extends SubsystemBase {
 
     public static double backLeft_MIN = 0.7, backLeft_MAX = 0.32;
     public static double backRight_MIN = 0.6, backRight_MAX = 0.25;
-    public static double frontLeft_MIN = 0.32, frontLeft_MAX = 0.64;
+    public static double frontLeft_MIN = 0.3, frontLeft_MAX = 0.64;
     public static double frontRight_MIN = 0.36, frontRight_MAX = 0.7;
 
     public static double TUNING_CONSTANT = 0.2;
