@@ -46,7 +46,12 @@ public class DriveTrain extends SubsystemBase {
     public DriveState driveState = DriveState.DEFAULT;
     public DifferentialState differentialState = DifferentialState.IDLE;
 
-    public static double frontLeftServo_init = 0.505, backLeftServo_init = 0.48, frontRightServo_init = 0.49, backRightServo_init = 0.48;
+    public static double frontLeftServo_init = 0.47;
+    public static double backLeftServo_init = 0.48;
+    public static double frontRightServo_init = 0.49;
+    public static double backRightServo_init = 0.48;
+
+
     public static double frontLeftPos = 0.505;
     public static double backLeftPos = 0.48;
     public static double frontRightPos = 0.49;
@@ -54,7 +59,7 @@ public class DriveTrain extends SubsystemBase {
 
     public static double backLeft_MIN = 0.7, backLeft_MAX = 0.32;
     public static double backRight_MIN = 0.6, backRight_MAX = 0.25;
-    public static double frontLeft_MIN = 0.3, frontLeft_MAX = 0.64;
+    public static double frontLeft_MIN = 0.32, frontLeft_MAX = 0.64;
     public static double frontRight_MIN = 0.36, frontRight_MAX = 0.7;
 
     public static double TUNING_CONSTANT = 0.2;
@@ -116,6 +121,15 @@ public class DriveTrain extends SubsystemBase {
         directionState = DirectionState.DUAL;
     }
 
+    public void initializeRaliu(){
+        frontRightServo.setPosition(frontRightServo_init);
+        frontLeftServo.setPosition(frontLeftServo_init);
+        frontLeftPos = 0.505;
+        frontRightPos = 0.49;
+
+        directionState = DirectionState.SINGLE;
+    }
+
     public void update(DirectionState state){
         directionState = state;
     }
@@ -128,7 +142,114 @@ public class DriveTrain extends SubsystemBase {
         differentialState = state;
     }
 
+    public void loopRaliu(double power, double direction){
+        power = power * 0.7;
 
+        if(driveState == DriveState.TANK_LEFT){
+            frontRightMotor.setPower(TANK_SPEED);
+            frontLeftMotor.setPower(-TANK_SPEED);
+            backRightMotor.setPower(TANK_SPEED);
+            backLeftMotor.setPower(-TANK_SPEED);
+        }
+        else if(driveState == DriveState.TANK_RIGHT){
+            frontRightMotor.setPower(-TANK_SPEED);
+            frontLeftMotor.setPower(TANK_SPEED);
+            backRightMotor.setPower(-TANK_SPEED);
+            backLeftMotor.setPower(TANK_SPEED);
+        }
+        else{
+            if(direction == 0){
+                frontRightServo.setPosition(frontRightServo_init);
+                frontLeftServo.setPosition(frontLeftServo_init);
+            }
+            else if(direction > 0){
+                frontRightServo.setPosition(interpolateBig(direction, frontRightServo_init, frontRight_MAX));
+                frontLeftServo.setPosition(interpolateBig(direction, frontLeftServo_init, frontLeft_MAX));
+            }
+            else{
+                frontRightServo.setPosition(interpolateSmall(direction, frontRight_MIN, frontRightServo_init));
+                frontLeftServo.setPosition(interpolateSmall(direction, frontLeft_MIN, frontLeftServo_init));
+            }
+
+
+            //diferential
+            if(differentialState == DifferentialState.IDLE){
+                if(power > 0){
+                    if(direction > 0){ // right
+                        frontRightMotor.setPower(power - (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+                        backRightMotor.setPower(power - (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+
+                        frontLeftMotor.setPower(power);
+                        backLeftMotor.setPower(power);
+                    }
+                    else{ //left
+                        frontRightMotor.setPower(power);
+                        backRightMotor.setPower(power);
+
+                        frontLeftMotor.setPower(power - (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+                        backLeftMotor.setPower(power - (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+                    }
+                }
+
+                else{
+                    if(direction > 0){ // right
+                        frontRightMotor.setPower(power + (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+                        backRightMotor.setPower(power + (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+
+                        frontLeftMotor.setPower(power);
+                        backLeftMotor.setPower(power);
+                    }
+                    else{ //left
+                        frontRightMotor.setPower(power);
+                        backRightMotor.setPower(power);
+
+                        frontLeftMotor.setPower(power + (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+                        backLeftMotor.setPower(power + (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+                    }
+                }
+            }
+            else{//disable differential
+                if(power > 0){
+                    if(direction > 0){ // right
+                        frontRightMotor.setPower(power);
+                        backRightMotor.setPower(power);
+
+                        frontLeftMotor.setPower(power);
+                        backLeftMotor.setPower(power);
+                    }
+                    else{ //left
+                        frontRightMotor.setPower(power);
+                        backRightMotor.setPower(power);
+
+                        frontLeftMotor.setPower(power);
+                        backLeftMotor.setPower(power);
+                    }
+                }
+
+                else{
+                    if(direction > 0){ // right
+                        frontRightMotor.setPower(power);
+                        backRightMotor.setPower(power);
+
+                        frontLeftMotor.setPower(power);
+                        backLeftMotor.setPower(power);
+                    }
+                    else{ //left
+                        frontRightMotor.setPower(power);
+                        backRightMotor.setPower(power);
+
+                        frontLeftMotor.setPower(power);
+                        backLeftMotor.setPower(power);
+                    }
+                }
+            }
+
+
+
+
+
+        }
+    }
 
     public void loop(double power, double direction){
         if(driveState == DriveState.TANK_LEFT){
@@ -190,7 +311,6 @@ public class DriveTrain extends SubsystemBase {
 
 
             //differential
-
             if(differentialState == DifferentialState.IDLE){
                 if(power > 0){
                     if(direction > 0){ // right
@@ -295,5 +415,15 @@ public class DriveTrain extends SubsystemBase {
 
     public double getTrimCounter(){
         return trimCounter;
+    }
+
+
+
+
+    public void loopTest(){
+        frontRightServo.setPosition(frontRightServo_init);
+        frontLeftServo.setPosition(frontLeftServo_init);
+        backRightServo.setPosition(backRightServo_init);
+        backLeftServo.setPosition(backLeftServo_init);
     }
 }
