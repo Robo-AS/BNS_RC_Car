@@ -37,8 +37,14 @@ public class DriveTrain extends SubsystemBase {
         DEFAULT
     }
 
+    public enum DifferentialState{
+        IDLE,
+        DISABLED
+    }
+
     public DirectionState directionState = DirectionState.DUAL;
     public DriveState driveState = DriveState.DEFAULT;
+    public DifferentialState differentialState = DifferentialState.IDLE;
 
     public static double frontLeftServo_init = 0.505, backLeftServo_init = 0.48, frontRightServo_init = 0.49, backRightServo_init = 0.48;
     public static double frontLeftPos = 0.505;
@@ -54,7 +60,7 @@ public class DriveTrain extends SubsystemBase {
     public static double TUNING_CONSTANT = 0.2;
     public static double trimCounter = 0;
     public static double TRIM_CONSTANT = 0.001;
-    public static double TANK_SPEED = 0.1;
+    public static double TANK_SPEED = 1;
 
 
     public void initializeHardware(final HardwareMap hardwareMap){
@@ -118,6 +124,11 @@ public class DriveTrain extends SubsystemBase {
         driveState = state;
     }
 
+    public void update(DifferentialState state){
+        differentialState = state;
+    }
+
+
 
     public void loop(double power, double direction){
         if(driveState == DriveState.TANK_LEFT){
@@ -179,37 +190,75 @@ public class DriveTrain extends SubsystemBase {
 
 
             //differential
-            if(power > 0){
-                if(direction > 0){ // right
-                    frontRightMotor.setPower(power - (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
-                    backRightMotor.setPower(power - (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
 
-                    frontLeftMotor.setPower(power);
-                    backLeftMotor.setPower(power);
+            if(differentialState == DifferentialState.IDLE){
+                if(power > 0){
+                    if(direction > 0){ // right
+                        frontRightMotor.setPower(power - (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+                        backRightMotor.setPower(power - (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+
+                        frontLeftMotor.setPower(power);
+                        backLeftMotor.setPower(power);
+                    }
+                    else{ //left
+                        frontRightMotor.setPower(power);
+                        backRightMotor.setPower(power);
+
+                        frontLeftMotor.setPower(power - (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+                        backLeftMotor.setPower(power - (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+                    }
                 }
-                else{ //left
-                    frontRightMotor.setPower(power);
-                    backRightMotor.setPower(power);
 
-                    frontLeftMotor.setPower(power - (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
-                    backLeftMotor.setPower(power - (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+                else{
+                    if(direction > 0){ // right
+                        frontRightMotor.setPower(power + (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+                        backRightMotor.setPower(power + (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+
+                        frontLeftMotor.setPower(power);
+                        backLeftMotor.setPower(power);
+                    }
+                    else{ //left
+                        frontRightMotor.setPower(power);
+                        backRightMotor.setPower(power);
+
+                        frontLeftMotor.setPower(power + (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+                        backLeftMotor.setPower(power + (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+                    }
                 }
             }
+            else{//disable differential
+                if(power > 0){
+                    if(direction > 0){ // right
+                        frontRightMotor.setPower(power);
+                        backRightMotor.setPower(power);
 
-            else{
-                if(direction > 0){ // right
-                    frontRightMotor.setPower(power + (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
-                    backRightMotor.setPower(power + (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+                        frontLeftMotor.setPower(power);
+                        backLeftMotor.setPower(power);
+                    }
+                    else{ //left
+                        frontRightMotor.setPower(power);
+                        backRightMotor.setPower(power);
 
-                    frontLeftMotor.setPower(power);
-                    backLeftMotor.setPower(power);
+                        frontLeftMotor.setPower(power);
+                        backLeftMotor.setPower(power);
+                    }
                 }
-                else{ //left
-                    frontRightMotor.setPower(power);
-                    backRightMotor.setPower(power);
 
-                    frontLeftMotor.setPower(power + (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
-                    backLeftMotor.setPower(power + (Math.abs(direction) * TUNING_CONSTANT * Math.abs(power)));
+                else{
+                    if(direction > 0){ // right
+                        frontRightMotor.setPower(power);
+                        backRightMotor.setPower(power);
+
+                        frontLeftMotor.setPower(power);
+                        backLeftMotor.setPower(power);
+                    }
+                    else{ //left
+                        frontRightMotor.setPower(power);
+                        backRightMotor.setPower(power);
+
+                        frontLeftMotor.setPower(power);
+                        backLeftMotor.setPower(power);
+                    }
                 }
             }
         }

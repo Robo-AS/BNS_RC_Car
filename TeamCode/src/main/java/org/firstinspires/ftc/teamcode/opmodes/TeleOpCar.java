@@ -19,6 +19,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import org.firstinspires.ftc.teamcode.commands.DecreaseTrimCommand;
 import org.firstinspires.ftc.teamcode.commands.EngageArm;
 import org.firstinspires.ftc.teamcode.commands.IncreaseTrimCommand;
+import org.firstinspires.ftc.teamcode.commands.SetDiferentialStateCommand;
 import org.firstinspires.ftc.teamcode.commands.SetDirectionStateCommand;
 import org.firstinspires.ftc.teamcode.commands.SetDriveStateCommand;
 import org.firstinspires.ftc.teamcode.hardware.Car;
@@ -72,6 +73,18 @@ public class TeleOpCar extends CommandOpMode {
 
 
 
+        gamepadEx.getGamepadButton(GamepadKeys.Button.RIGHT_STICK_BUTTON)
+                .whenPressed(
+                        () -> CommandScheduler.getInstance().schedule(
+                                new ConditionalCommand(
+                                        new SetDiferentialStateCommand(DriveTrain.DifferentialState.DISABLED),
+                                        new SetDiferentialStateCommand(DriveTrain.DifferentialState.IDLE),
+                                        () -> car.driveTrain.differentialState == DriveTrain.DifferentialState.IDLE
+                                )
+                        )
+                );
+
+
 
 
 
@@ -99,6 +112,8 @@ public class TeleOpCar extends CommandOpMode {
 
         telemetry.addData("TRIM:", car.driveTrain.getTrimCounter());
         telemetry.addData("Directie:", car.driveTrain.directionState);
+        telemetry.addData("Differential:", car.driveTrain.differentialState);
+
         double loop = System.nanoTime();
         telemetry.addData("Hz", 1000000000 / (loop - loopTime));
         loopTime = loop;
